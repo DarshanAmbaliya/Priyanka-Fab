@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Routes, Navigate, useNavigate, NavLink } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
-import bcrypt from "bcryptjs";
 import './App.css';
 
 // Page Imports
@@ -13,6 +12,8 @@ import Fabricquality from './components/FabricQuality/Fabricquality';
 import ProductionReport from './pages/ProductionReport/ProductionReport';
 import AdminReport from './pages/AdminReport/AdminReport';
 import YarnQuality from './components/YarnQuality/YarnQuality';
+import Register from './pages/Register';
+import ResetPassword from "./pages/ResetPassword";
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -24,17 +25,21 @@ const getDeviceDetails = () => {
   return `${vendor} ${model} (${os})`.trim();
 };
 
-const USERS_DB = [
-  { username: 'admin', hash: '$2b$10$JFjSmI3KdAiP9diWPHnloOtkBmOAIteR8XHSodNInc4e/uDeZYw3.', role: 'admin', name: 'Administrator' },
-  { username: 'demo', hash: '$2b$10$P8.kmq08IebevVfYBV2HRuklURWXNBcKqqcub5PnWpYaYUA6iUSX2', role: 'demo', name: 'Manager' },
-  { username: 'master', hash: '$2b$10$ofJDM5/K4O65.j0rtiaZyOeIHZhRP837o.5tVLtQKkpChGIVMDan6', role: 'user', name: 'Staff' }
-];
-
 function App() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://rupai-fabric.onrender.com";
 
   // PASTE YOUR URL HERE
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzYPp_rqBf-mXz30-N4zIZMXvRPJ8_L7mHiH9oC4U-GNjl5Ml2npGGm_uKNrnIXOb6/exec';
@@ -69,27 +74,54 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const userMatch = USERS_DB.find(
-      (u) => u.username.toLowerCase() === credentials.username.toLowerCase() &&
-        bcrypt.compareSync(credentials.password, u.hash)
-    );
 
-    if (userMatch) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: credentials.username,
+            password: credentials.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Invalid username or password");
+        return;
+      }
+
       const deviceInfo = getDeviceDetails();
       const today = new Date().toLocaleDateString();
-      const sessionData = { ...userMatch, device: deviceInfo, loginDate: today };
 
-      // SEND LOGIN STATUS
+      const sessionData = {
+        ...data.user,
+        device: deviceInfo,
+        loginDate: today,
+      };
+
       logToSheet(sessionData, "Login");
 
       setCurrentUser(sessionData);
-      localStorage.setItem('authUser', JSON.stringify(sessionData));
-      setError('');
-      navigate('/');
-    } else {
-      setError('Invalid username or password');
+
+      localStorage.setItem(
+        "authUser",
+        JSON.stringify(sessionData)
+      );
+
+      setError("");
+      navigate("/");
+    } catch (error) {
+      console.error("Login Error:", error);
+      setError("Server Error");
     }
   };
 
@@ -104,21 +136,6 @@ function App() {
     navigate('/');
   };
 
-  if (!currentUser) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '100px' }}>
-        <div style={{ display: 'inline-block', padding: '30px', border: '1px solid #ddd', borderRadius: '10px' }}>
-          <h2>System Login</h2>
-          <form onSubmit={handleLogin}>
-            <input type="text" placeholder="Username" onChange={e => setCredentials({ ...credentials, username: e.target.value })} required style={{ display: 'block', margin: '10px auto', padding: '10px' }} />
-            <input type="password" placeholder="Password" onChange={e => setCredentials({ ...credentials, password: e.target.value })} required style={{ display: 'block', margin: '10px auto', padding: '10px' }} />
-            <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '5px' }}>Login</button>
-          </form>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="App">
@@ -139,19 +156,175 @@ function App() {
       </header>
 
       <Routes>
-        <Route path='/' element={<Homepage currentUser={currentUser} />} />
-        <Route path='/attendance' element={<AttendancePage currentUser={currentUser} />} />
-        <Route path='/production' element={<Production />} />
+
+        {/* PUBLIC ROUTES */}
+        <Route
+          path="/login"
+          element={
+            currentUser ? (
+              <Navigate to="/" />
+            ) : (
+              <div style={styles.container}>
+                <div style={styles.card}>
+                  <h2>System Login</h2>
+
+                  <form onSubmit={handleLogin}>
+                    <input
+                      type="text"
+                      placeholder="Username"
+                      onChange={(e) =>
+                        setCredentials({
+                          ...credentials,
+                          username: e.target.value,
+                        })
+                      }
+                      style={styles.input}
+                    />
+
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      onChange={(e) =>
+                        setCredentials({
+                          ...credentials,
+                          password: e.target.value,
+                        })
+                      }
+                      style={styles.input}
+                    />
+                    <label style={{ fontSize: "13px", display: "block", marginTop: "5px" }}>
+                      <input
+                        type="checkbox"
+                        onChange={togglePassword}
+                        style={{ marginRight: "5px" }}
+                      />
+                      Show Password
+                    </label>
+
+                    <button style={styles.button}>Login</button>
+                  </form>
+
+                  {error && <p style={{ color: "red" }}>{error}</p>}
+
+                  <p>
+                    <NavLink to="/register">Create Account</NavLink>
+                  </p>
+
+                  <NavLink to="/reset-password">
+                    Forgot Password?
+                  </NavLink>
+                </div>
+              </div>
+            )
+          }
+        />
+
+        <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* PROTECTED ROUTES */}
+        <Route
+          path="/"
+          element={
+            currentUser ? (
+              <Homepage currentUser={currentUser} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/attendance"
+          element={
+            currentUser ? (
+              <AttendancePage currentUser={currentUser} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route path="/production" element={<Production />} />
         <Route path="/production/:date?" element={<Production />} />
-        <Route path='/fabric' element={<Fabricquality />} />
-        <Route path='/yarn' element={<YarnQuality />} />
-        <Route path='/attendancerecord' element={currentUser.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />} />
-        <Route path='/productionreport' element={currentUser.role === 'admin' ? <ProductionReport /> : <Navigate to="/" />} />
-        <Route path='/adminreport' element={<AdminReport currentUser={currentUser} />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/fabric" element={<Fabricquality />} />
+        <Route path="/yarn" element={<YarnQuality />} />
+
+        <Route
+          path="/attendancerecord"
+          element={
+            currentUser?.role === "admin" ? (
+              <AttendanceRecord />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/productionreport"
+          element={
+            currentUser?.role === "admin" ? (
+              <ProductionReport />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/adminreport"
+          element={
+            currentUser ? (
+              <AdminReport currentUser={currentUser} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/login" />} />
+
       </Routes>
     </div>
   );
 }
+const styles = {
+  container: {
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "linear-gradient(135deg, #667eea, #764ba2)",
+  },
 
+  card: {
+    width: "380px",
+    padding: "35px",
+    borderRadius: "12px",
+    background: "#fff",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+    textAlign: "center",
+  },
+
+  input: {
+    width: "100%",
+    padding: "12px",
+    margin: "10px 0",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    outline: "none",
+  },
+
+  button: {
+    width: "100%",
+    padding: "12px",
+    background: "#667eea",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+};
 export default App;

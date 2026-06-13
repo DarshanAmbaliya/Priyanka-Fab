@@ -6,6 +6,7 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const fabricRoutes = require("./routes/fabricRoutes");
 const productionRoutes = require("./routes/productionRoutes.js")
 const yarnRoutes = require("./routes/yarnRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(cors({
 app.use(express.json());
 
 // API Routes
+app.use("/api/auth", authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use("/api/fabrics", fabricRoutes);
 app.use("/api/production", productionRoutes);

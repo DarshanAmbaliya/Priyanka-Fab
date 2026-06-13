@@ -457,9 +457,7 @@ const AdminReport = ({ currentUser }) => {
                   {
                     isAdmin && (
                       <>
-                        <th>Total Pick</th>
                         <th>Pick Charge Per Unit</th>
-                        <th>Pick Charge</th>
                       </>
                     )
                   }
@@ -493,9 +491,7 @@ const AdminReport = ({ currentUser }) => {
                       <td>{row.total_production_meter}</td>
                       {isAdmin && (
                         <>
-                          <td>{(row.total_pick).toFixed(2)}</td>
                           <td>{row.pick_charge_per_unit}</td>
-                          <td>{row.pick_charge}</td>
                         </>
                       )}
                     </tr>
@@ -534,9 +530,7 @@ const AdminReport = ({ currentUser }) => {
                   </td>
                   {currentUser?.role == "admin" && (
                     <>
-                      <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
                       <td>{avgPickChargePerUnit}</td>
-                      <td>{avgPickCharge}</td>
                     </>
                   )}
                 </tr>
