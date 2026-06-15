@@ -34,10 +34,10 @@ app.use("/api/yarns", yarnRoutes);
 
 // api status Check
 app.get('/', (req, res) => {
-  res.send('🚀 Rupai Fabric API is running!');
+  res.send('Rupai Fabric API is running!');
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
