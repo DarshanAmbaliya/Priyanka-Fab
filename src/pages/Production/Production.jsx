@@ -725,7 +725,7 @@ const Production = () => {
             </tr>
             <tr>
               <td colSpan="6" style={{ textAlign: "right" }}>
-                Main Meter :
+                Main Unit :
               </td>
               <td colSpan="2">
                 <input
@@ -756,7 +756,7 @@ const Production = () => {
                 })()}%
               </td>
               <td colSpan="1" style={{ textAlign: "right" }}>
-                Compressor Meter :
+                Compressor Unit :
               </td>
               <td colSpan="1">
                 <input

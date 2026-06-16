@@ -38,8 +38,8 @@ const AdminReport = ({ currentUser }) => {
       }
 
       // Calculation: (Current Meter - Previous Meter) * 30
-      const mainUsed = (Number(current.main_meter || 0) - Number(prev.main_meter || 0)) * 30;
-      const compUsed = (Number(current.compressor_meter || 0) - Number(prev.compressor_meter || 0)) * 30;
+      const mainUsed = (Number(current.main_meter || 0) - Number(prev.main_meter || 0));
+      const compUsed = (Number(current.compressor_meter || 0) - Number(prev.compressor_meter || 0));
 
       return {
         ...current,
@@ -88,7 +88,7 @@ const AdminReport = ({ currentUser }) => {
           date,
           currentSummary: current, // store this for the next step
           mainUsed: prev ? (mainMeter - prevMainMeter) : 0,
-          compUsed: prev ? (compMeter - prevCompMeter) * 30 : 0
+          compUsed: prev ? (compMeter - prevCompMeter) : 0
         };
       });
 
@@ -107,14 +107,14 @@ const AdminReport = ({ currentUser }) => {
         const totalProduction = Number(current.total_production_meter || 0);
         const totalPick = Number(current.total_pick || 0);
 
-        // 18.5 - 5.5 (30 days)
+        // 15.3 - 5/(30 days)
         const pickChargeFixedCost = (avgPick > 0 && totalProduction > 0)
-          ? (41666 / (avgPick * totalProduction))
+          ? (34333 / (avgPick * totalProduction))
           : 0;
 
         // Use calculatedAvgMainUsed instead of external variable
         const pickChargePerUnit = (totalPick > 0)
-          ? (calculatedAvgMainUsed / totalPick) * 7.9
+          ? (totalUnitUsed / totalPick) * 7.9
           : 0;
 
         return {
@@ -239,6 +239,15 @@ const AdminReport = ({ currentUser }) => {
   const avgCompUsed =
     count > 0
       ? (totalCompUsed / count).toFixed(2)
+      : 0;
+
+  // Total Unit = Main + Compressor
+  const totalUnitUsed = totalMainUsed + totalCompUsed;
+
+  // Average Total Unit
+  const avgTotalUnitUsed =
+    count > 0
+      ? (totalUnitUsed / count).toFixed(2)
       : 0;
 
   const totalLostMeter = filteredData.reduce((sum, r) => sum + Number(r.total_lost_meter || 0), 0);
@@ -450,8 +459,9 @@ const AdminReport = ({ currentUser }) => {
                   <th>Avg RPM</th>
                   <th>Avg Efficiency</th>
                   <th>Avg Pick</th>
-                  <th>Compressor Meter</th>
-                  <th>Main Meter</th>
+                  <th>Compressor Unit</th>
+                  <th>Main Unit</th>
+                  <th>Total Unit (Compress+main)</th>
                   <th>Total Machine stop Loss Meter</th>
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
@@ -466,12 +476,6 @@ const AdminReport = ({ currentUser }) => {
                     isAdmin && (
                       <>
                         <th>Pick Charge Per Unit</th>
-                      </>
-                    )
-                  }
-                  {
-                    isDeveloper && (
-                      <>
                         <th>Pick Charge</th>
                       </>
                     )
@@ -493,6 +497,7 @@ const AdminReport = ({ currentUser }) => {
                       <td>{row.avg_pick}</td>
                       <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
+                      <td>{(Number(row.main_meter_used) + Number(row.compressor_meter_used)).toFixed(2)}</td>
                       <td style={{
                         color: row.total_machine_stop_loss_meter > 0 ? "#2e7d32" : row.total_machine_stop_loss_meter < 0 ? "red" : "black"
                       }}>
@@ -514,15 +519,9 @@ const AdminReport = ({ currentUser }) => {
                       {isAdmin && (
                         <>
                           <td>{row.pick_charge_per_unit}</td>
+                          <td>{row.pick_charge}</td>
                         </>
                       )}
-                      {
-                        isDeveloper && (
-                          <>
-                            <td>{row.pick_charge}</td>
-                          </>
-                        )
-                      }
                     </tr>
                   ))
                 ) : (
@@ -543,6 +542,11 @@ const AdminReport = ({ currentUser }) => {
                   </td>
                   <td>
                     AVG: {Number(avgMainUsed).toFixed(2)} <br />TOTAL: {Number(totalMainUsed).toFixed(2)}
+                  </td>
+                  <td>
+                    AVG: {avgTotalUnitUsed}
+                    <br />
+                    TOTAL: {totalUnitUsed.toFixed(2)}
                   </td>
                   <td style={{
                     color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
@@ -567,15 +571,9 @@ const AdminReport = ({ currentUser }) => {
                   {currentUser?.role == "admin" && (
                     <>
                       <td>{avgPickChargePerUnit}</td>
+                      <td>{avgPickCharge}</td>
                     </>
                   )}
-                  {
-                    isDeveloper && (
-                      <>
-                        <td>{avgPickCharge}</td>
-                      </>
-                    )
-                  }
                 </tr>
               </tfoot>
             </table>
