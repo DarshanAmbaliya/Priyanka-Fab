@@ -479,9 +479,9 @@ const AdminReport = ({ currentUser }) => {
                   <th>Avg RPM</th>
                   <th>Avg Efficiency</th>
                   <th>Avg Pick</th>
-                  <th>Compressor Unit</th>
+                  {/* <th>Compressor Unit</th> */}
                   <th>Main Unit</th>
-                  <th>Total Unit (Compress+main)</th>
+                  {/* <th>Total Unit (Compress+main)</th> */}
                   <th>Total Machine stop Loss Meter</th>
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
@@ -489,6 +489,7 @@ const AdminReport = ({ currentUser }) => {
                     isDeveloper && (
                       <>
                         <th>Total Pick</th>
+                        <th>Pick Charge</th>
                       </>
                     )
                   }
@@ -496,7 +497,6 @@ const AdminReport = ({ currentUser }) => {
                     (isAdmin || isDeveloper) && (
                       <>
                         <th>Pick Charge Per Unit</th>
-                        <th>Pick Charge</th>
                       </>
                     )
                   }
@@ -515,9 +515,9 @@ const AdminReport = ({ currentUser }) => {
                       <td>{row.avg_rpm}</td>
                       <td>{row.avg_efficiency}</td>
                       <td>{row.avg_pick}</td>
-                      <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
+                      {/* <td>{Number(row.compressor_meter_used).toFixed(2)}</td> */}
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
-                      <td>{(Number(row.main_meter_used) + Number(row.compressor_meter_used)).toFixed(2)}</td>
+                      {/* <td>{(Number(row.main_meter_used) + Number(row.compressor_meter_used)).toFixed(2)}</td> */}
                       <td style={{
                         color: row.total_machine_stop_loss_meter > 0 ? "#2e7d32" : row.total_machine_stop_loss_meter < 0 ? "red" : "black"
                       }}>
@@ -533,13 +533,13 @@ const AdminReport = ({ currentUser }) => {
                         isDeveloper && (
                           <>
                             <td>{(row.total_pick).toFixed(2)}</td>
+                            <td>{row.pick_charge}</td>
                           </>
                         )
                       }
                       {(isAdmin || isDeveloper) && (
                         <>
                           <td>{row.pick_charge_per_unit}</td>
-                          <td>{row.pick_charge}</td>
                         </>
                       )}
                     </tr>
@@ -557,17 +557,17 @@ const AdminReport = ({ currentUser }) => {
                   <td>{avgRPM}</td>
                   <td>{avgEfficiencyTotal} %</td>
                   <td>{avgPick}</td>
-                  <td>
+                  {/* <td>
                     AVG: {Number(avgCompUsed).toFixed(2)} <br />TOTAL: {Number(totalCompUsed).toFixed(2)}
-                  </td>
+                  </td> */}
                   <td>
                     AVG: {Number(avgMainUsed).toFixed(2)} <br />TOTAL: {Number(totalMainUsed).toFixed(2)}
                   </td>
-                  <td>
+                  {/* <td>
                     AVG: {avgTotalUnitUsed}
                     <br />
                     TOTAL: {totalUnitUsed.toFixed(2)}
-                  </td>
+                  </td> */}
                   <td style={{
                     color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
                   }}>
@@ -585,13 +585,13 @@ const AdminReport = ({ currentUser }) => {
                     isDeveloper && (
                       <>
                         <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
+                        <td>{avgPickCharge}</td>
                       </>
                     )
                   }
                   {(currentUser?.role == "admin" || isDeveloper) && (
                     <>
                       <td>{avgPickChargePerUnit}</td>
-                      <td>{avgPickCharge}</td>
                     </>
                   )}
                 </tr>

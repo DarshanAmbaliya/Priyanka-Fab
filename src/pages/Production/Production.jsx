@@ -756,10 +756,10 @@ const Production = () => {
                 })()}%
               </td>
               <td colSpan="1" style={{ textAlign: "right" }}>
-                Compressor Unit :
+                {/* Compressor Unit : */}
               </td>
               <td colSpan="1">
-                <input
+                {/* <input
                   type="number"
                   value={footerMeters.compressorMeter}
                   onChange={(e) =>
@@ -769,7 +769,7 @@ const Production = () => {
                     }))
                   }
                   style={{ width: "100px" }}
-                />
+                /> */}
               </td>
               <td
                 colSpan={3}

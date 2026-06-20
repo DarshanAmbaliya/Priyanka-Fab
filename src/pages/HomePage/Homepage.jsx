@@ -85,7 +85,7 @@ const Homepage = ({ currentUser }) => {
         </li>
       </ul>
       <div className="mataji-image" style={{ "display": "flex", "justifyContent": "center" }}>
-        <img src="./rupai-mataji.jpeg" alt="" style={{ 'width': "200px", "height": "350px" }} />
+        <img src="./white_horizontal_logo.png" alt="" style={{"height": "500px"}}/>
       </div>
     </>
   );

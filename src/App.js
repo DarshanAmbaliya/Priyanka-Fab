@@ -164,7 +164,7 @@ function App() {
       <header className="app-header">
         <div className="header-left">
           <NavLink to='/'>
-            <img src="/logo.png" alt="Logo" className="logo" />
+            <img src="/favicon.png" alt="Logo" className="logo" />
           </NavLink>
           <span className="user-info">
             <strong>{currentUser?.username}</strong>
