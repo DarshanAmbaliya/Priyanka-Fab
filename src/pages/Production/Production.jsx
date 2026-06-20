@@ -12,6 +12,7 @@ const Production = () => {
   });
   const [yarnList, setYarnList] = useState([]); // All available yarns from DB
   const [selectedYarns, setSelectedYarns] = useState([{ yarn_name: "", quantity: "" }]);
+  const [employees, setEmployees] = useState([]);
 
   /**
  * FIXED API URL LOGIC
@@ -42,7 +43,9 @@ const Production = () => {
       nightMeter: 0,
       dayEff: 0,
       nightEff: 0,
-      pick: 0
+      pick: 0,
+      dayOperator: "",
+      nightOperator: ""
     }))
   );
 
@@ -55,6 +58,27 @@ const Production = () => {
 
   // Fetch fabric quality data
   useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/employees`);
+
+        const currentYear = new Date().getFullYear();
+
+        const months = [
+          "january", "february", "march", "april", "may", "june",
+          "july", "august", "september", "october", "november", "december"
+        ];
+
+        const currentMonth = months[new Date().getMonth()];
+
+        const employeeList =
+          res.data?.[currentYear]?.[currentMonth] || [];
+
+        setEmployees(employeeList);
+      } catch (err) {
+        console.error(err);
+      }
+    };
     const fetchFabrics = async () => {
       try {
         const res = await axios.get(`${API_URL}/api/fabrics`);
@@ -71,9 +95,60 @@ const Production = () => {
         console.error(err);
       }
     };
+    fetchEmployees();
     fetchFabrics();
     fetchYarn();
   }, []);
+
+  useEffect(() => {
+
+    const fetchEmployees = async () => {
+      try {
+
+        const res = await axios.get(`${API_URL}/api/employees`);
+
+        const dateObj = new Date(selectedDate);
+
+        const year = dateObj.getFullYear();
+
+        const months = [
+          "january",
+          "february",
+          "march",
+          "april",
+          "may",
+          "june",
+          "july",
+          "august",
+          "september",
+          "october",
+          "november",
+          "december"
+        ];
+
+
+        const monthName = months[dateObj.getMonth()];
+
+
+        const employeeList =
+          res.data?.[year]?.[monthName] || [];
+
+
+        setEmployees(employeeList);
+
+
+      } catch (err) {
+        console.log("Employee fetch error", err);
+      }
+    };
+
+
+    if (selectedDate) {
+      fetchEmployees();
+    }
+
+
+  }, [selectedDate]);
 
   // Totals and averages
   const totalDayProd = machines.reduce(
@@ -182,29 +257,112 @@ const Production = () => {
     const totalTargetMeter = calculateTotalTargetMeter();
     const machineStopLoss = totalProdMeter - totalTargetMeter;
 
-    for (let i = 0; i < 3; i++) {
-      const machineBlock = getMachineBlock(i);
 
-      ["Day", "Night"].forEach((shift) => {
-        entries.push({
-          operator_name: shift === "Day" ? operators.day[i] : operators.night[i],
-          shift,
-          average_meter: calculateAvg(i, shift === "Day" ? "dayMeter" : "nightMeter"),
-          average_efficiency: calculateAvg(i, shift === "Day" ? "dayEff" : "nightEff"),
-          machine_production: machineBlock.map((m) => ({
-            machineNumber: m.machineNumber,
-            quality: m.quality,
-            reed: m.reed,
-            rpm: m.rpm,
-            bimNumber: m.bimNumber,
-            bimBalance: m.bimBalance,
-            meter: shift === "Day" ? m.dayMeter : m.nightMeter,
-            efficiency: shift === "Day" ? m.dayEff : m.nightEff,
-            pick: m.pick
-          }))
-        });
+    // DAY SHIFT
+    const dayOperators = [...new Set(
+      machines
+        .map(m => m.dayOperator)
+        .filter(Boolean)
+    )];
+
+    dayOperators.forEach(operator => {
+
+      const machineBlock = machines.filter(
+        m => m.dayOperator === operator
+      );
+
+      entries.push({
+        operator_name: operator,
+        shift: "Day",
+
+        average_meter:
+          machineBlock.length > 0
+            ? (
+              machineBlock.reduce(
+                (sum, m) => sum + (Number(m.dayMeter) || 0),
+                0
+              ) / machineBlock.length
+            ).toFixed(2)
+            : 0,
+
+        average_efficiency:
+          machineBlock.length > 0
+            ? (
+              machineBlock.reduce(
+                (sum, m) => sum + (Number(m.dayEff) || 0),
+                0
+              ) / machineBlock.length
+            ).toFixed(2)
+            : 0,
+
+        machine_production: machineBlock.map(m => ({
+          machineNumber: m.machineNumber,
+          quality: m.quality,
+          reed: m.reed,
+          rpm: m.rpm,
+          bimNumber: m.bimNumber,
+          bimBalance: m.bimBalance,
+          meter: m.dayMeter,
+          efficiency: m.dayEff,
+          pick: m.pick,
+          operator: m.dayOperator
+        }))
       });
-    }
+
+    });
+
+    // NIGHT SHIFT
+    const nightOperators = [...new Set(
+      machines
+        .map(m => m.nightOperator)
+        .filter(Boolean)
+    )];
+
+    nightOperators.forEach(operator => {
+
+      const machineBlock = machines.filter(
+        m => m.nightOperator === operator
+      );
+
+      entries.push({
+        operator_name: operator,
+        shift: "Night",
+
+        average_meter:
+          machineBlock.length > 0
+            ? (
+              machineBlock.reduce(
+                (sum, m) => sum + (Number(m.nightMeter) || 0),
+                0
+              ) / machineBlock.length
+            ).toFixed(2)
+            : 0,
+
+        average_efficiency:
+          machineBlock.length > 0
+            ? (
+              machineBlock.reduce(
+                (sum, m) => sum + (Number(m.nightEff) || 0),
+                0
+              ) / machineBlock.length
+            ).toFixed(2)
+            : 0,
+
+        machine_production: machineBlock.map(m => ({
+          machineNumber: m.machineNumber,
+          quality: m.quality,
+          reed: m.reed,
+          rpm: m.rpm,
+          bimNumber: m.bimNumber,
+          bimBalance: m.bimBalance,
+          meter: m.nightMeter,
+          efficiency: m.nightEff,
+          pick: m.pick,
+          operator: m.nightOperator
+        }))
+      });
+
+    });
 
     setProductionData({
       [year]: {
@@ -300,8 +458,14 @@ const Production = () => {
           const updatedMachines = machines.map((m) => {
             let machineInfo = { ...m };
             opData.forEach((entry) => {
-              const foundMatch = entry.machine_production.find(p => p.machineNumber === m.machineNumber);
+
+              const foundMatch = entry.machine_production.find(
+                p => p.machineNumber === m.machineNumber
+              );
+
+
               if (foundMatch) {
+
                 machineInfo = {
                   ...machineInfo,
                   quality: foundMatch.quality || "",
@@ -310,16 +474,42 @@ const Production = () => {
                   bimNumber: foundMatch.bimNumber || "",
                   bimBalance: foundMatch.bimBalance || "",
                   pick: foundMatch.pick || 0,
-                  // Load actual production for this specific date
-                  dayMeter: entry.shift === "Day" ? foundMatch.meter : machineInfo.dayMeter,
-                  dayEff: entry.shift === "Day" ? foundMatch.efficiency : machineInfo.dayEff,
-                  nightMeter: entry.shift === "Night" ? foundMatch.meter : machineInfo.nightMeter,
-                  nightEff: entry.shift === "Night" ? foundMatch.efficiency : machineInfo.nightEff,
+                  dayMeter:
+                    entry.shift === "Day"
+                      ? foundMatch.meter
+                      : machineInfo.dayMeter,
+                  nightMeter:
+                    entry.shift === "Night"
+                      ? foundMatch.meter
+                      : machineInfo.nightMeter,
+
+                  dayEff:
+                    entry.shift === "Day"
+                      ? foundMatch.efficiency
+                      : machineInfo.dayEff,
+
+                  nightEff:
+                    entry.shift === "Night"
+                      ? foundMatch.efficiency
+                      : machineInfo.nightEff,
+
+                  // IMPORTANT
+                  dayOperator:
+                    entry.shift === "Day"
+                      ? foundMatch.operator || entry.operator_name
+                      : machineInfo.dayOperator,
+
+                  nightOperator:
+                    entry.shift === "Night"
+                      ? foundMatch.operator || entry.operator_name
+                      : machineInfo.nightOperator
                 };
               }
             });
             return machineInfo;
           });
+
+
           setMachines(updatedMachines);
         } else {
           // OPTIONAL: Reset production meters if date is empty, 
@@ -471,7 +661,8 @@ const Production = () => {
               <th colSpan="2">Meters</th>
               <th rowSpan="2">BIM Balance</th>
               <th colSpan="2">Eff %</th>
-              <th colSpan="2">Operator & Avg</th>
+              <th rowSpan="2">Day Operator</th>
+              <th rowSpan="2">Night Operator</th>
               <th colSpan="2">Loss Meter</th>
               <th rowSpan="2">Pick</th>
             </tr>
@@ -480,8 +671,6 @@ const Production = () => {
               <th>Night</th>
               <th>Day</th>
               <th>Night</th>
-              <th>Day Shift</th>
-              <th>Night Shift</th>
               <th style={{ width: "83px" }}>Day Shift</th>
               <th style={{ width: "83px" }}>Night Shift</th>
             </tr>
@@ -489,12 +678,6 @@ const Production = () => {
 
           <tbody>
             {machines.map((m, index) => {
-              const opIdx = getOperatorIndex(index);
-
-              const isFirst =
-                index === 0 ||   // Machine 1
-                index === 4 ||   // Machine 5
-                index === 8;     // Machine 9
 
               const dayLost = calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter);
               const nightLost = calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter);
@@ -584,61 +767,45 @@ const Production = () => {
                     />
                   </td>
 
-                  {isFirst && (
-                    <>
-                      {/* Day Shift */}
-                      <td rowSpan={4}>
-                        <div>
-                          <label>Operator:</label>
-                          <input
-                            value={operators.day[opIdx]}
-                            onChange={(e) => handleOpNameChange("day", opIdx, e.target.value)}
-                            style={{
-                              marginTop: "2px",
-                              marginBottom: "5px",
-                              padding: "2px",
-                              fontSize: "11px"
-                            }}
-                          />
-                        </div>
-                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
-                          <strong>Total Meter:</strong> {calculateSum(opIdx, "dayMeter")}
-                        </div>
-                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
-                          <strong>Average Meter:</strong> {calculateAvg(opIdx, "dayMeter")}
-                        </div>
-                        <div style={{ fontSize: "11px" }}>
-                          <strong>Average Efficiency:</strong> {calculateAvg(opIdx, "dayEff")}%
-                        </div>
-                      </td>
+                  <td>
+                    <select
+                      value={m.dayOperator}
+                      onChange={(e) =>
+                        handleInputChange(index, "dayOperator", e.target.value)
+                      }
+                    >
+                      <option value="">Select Operator</option>
 
-                      {/* Night Shift */}
-                      <td rowSpan={4}>
-                        <div>
-                          <label>Operator:</label>
-                          <input
-                            value={operators.night[opIdx]}
-                            onChange={(e) => handleOpNameChange("night", opIdx, e.target.value)}
-                            style={{
-                              marginTop: "2px",
-                              marginBottom: "5px",
-                              padding: "2px",
-                              fontSize: "11px"
-                            }}
-                          />
-                        </div>
-                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
-                          <strong>Total Meter:</strong> {calculateSum(opIdx, "nightMeter")}
-                        </div>
-                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
-                          <strong>Average Meter:</strong> {calculateAvg(opIdx, "nightMeter")}
-                        </div>
-                        <div style={{ fontSize: "11px" }}>
-                          <strong>Average Efficiency:</strong> {calculateAvg(opIdx, "nightEff")}%
-                        </div>
-                      </td>
-                    </>
-                  )}
+                      {employees.map((emp, i) => (
+                        <option
+                          key={i}
+                          value={emp.name}
+                        >
+                          {emp.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+
+                  <td>
+                    <select
+                      value={m.nightOperator}
+                      onChange={(e) =>
+                        handleInputChange(index, "nightOperator", e.target.value)
+                      }
+                    >
+                      <option value="">Select Operator</option>
+
+                      {employees.map((emp, i) => (
+                        <option
+                          key={i}
+                          value={emp.name}
+                        >
+                          {emp.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
 
                   <td
                     style={{
