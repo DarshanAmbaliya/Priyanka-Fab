@@ -26,7 +26,7 @@ const getDeviceDetails = () => {
 };
 
 function App() {
-  const ACCESS_PIN = "5025";
+  const ACCESS_PIN = "7198";
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState('');

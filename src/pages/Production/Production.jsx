@@ -21,17 +21,17 @@ const Production = () => {
  */
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://priyanka-fab.onrender.com";
+    : "https://rupai-fabric-n9zz.onrender.com";
 
   const API_URL = `${API_BASE_URL}`;
   const getOperatorIndex = (machineIndex) => {
     if (machineIndex < 4) return 0;      // 1-4
-    if (machineIndex < 9) return 1;      // 5-9
-    return 2;                            // 10-14
+    if (machineIndex < 8) return 1;      // 5-8
+    return 2;                            // 9-12
   };
 
   const [machines, setMachines] = useState(
-    Array.from({ length: 14 }, (_, i) => ({
+    Array.from({ length: 12 }, (_, i) => ({
       machineNumber: i + 1,
       quality: "",
       reed: "",
@@ -124,17 +124,17 @@ const Production = () => {
 
   const getMachineBlock = (opIdx) => {
     if (opIdx === 0) return machines.slice(0, 4);   // 1-4
-    if (opIdx === 1) return machines.slice(4, 9);   // 5-9
-    return machines.slice(9, 14);                   // 10-14
+    if (opIdx === 1) return machines.slice(4, 8);   // 5-8
+    return machines.slice(8, 12);                   // 9-12
   };
-  
+
   const calculateAvg = (opIdx, field) => {
     const block = getMachineBlock(opIdx);
-  
+
     const values = block
       .map(m => parseFloat(m[field]))
       .filter(v => v > 0);
-  
+
     return values.length
       ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
       : "0.00";
@@ -142,7 +142,7 @@ const Production = () => {
 
   const calculateSum = (opIdx, field) => {
     const block = getMachineBlock(opIdx);
-  
+
     return block
       .reduce((acc, m) => acc + (parseFloat(m[field]) || 0), 0)
       .toFixed(2);
@@ -494,7 +494,7 @@ const Production = () => {
               const isFirst =
                 index === 0 ||   // Machine 1
                 index === 4 ||   // Machine 5
-                index === 9;     // Machine 10
+                index === 8;     // Machine 9
 
               const dayLost = calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter);
               const nightLost = calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter);
@@ -587,7 +587,7 @@ const Production = () => {
                   {isFirst && (
                     <>
                       {/* Day Shift */}
-                      <td rowSpan={opIdx === 0 ? 4 : 5}>
+                      <td rowSpan={4}>
                         <div>
                           <label>Operator:</label>
                           <input
@@ -613,7 +613,7 @@ const Production = () => {
                       </td>
 
                       {/* Night Shift */}
-                      <td rowSpan={opIdx === 0 ? 4 : 5}>
+                      <td rowSpan={4}>
                         <div>
                           <label>Operator:</label>
                           <input
