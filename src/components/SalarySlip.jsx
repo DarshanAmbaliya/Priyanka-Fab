@@ -24,7 +24,7 @@ export default function SalarySlip({ emp, month, year }) {
 
         {/* --- Header --- */}
         <div className="slip-header">
-          <h2>RUPAI FABRIC</h2>
+          <h2>PRIYANKA FAB</h2>
           <div className="slip-subheader">
             <p>PAYSLIP</p>
             <p>{month?.toUpperCase()} {year}</p>

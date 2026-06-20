@@ -21,7 +21,7 @@ export default function AttendanceRecord() {
 
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://rupai-fabric-n9zz.onrender.com";
+    : "https://priyanka-fab.onrender.com";
 
   const API_URL = `${API_BASE_URL}/api/employees`;
   useEffect(() => {
@@ -85,7 +85,7 @@ const handlePrintSlip = () => {
         {/* --- SCREEN HEADER --- */}
         <div className="app-header no-print">
           <div className="brand">
-            <h2>Rupai Fabric</h2>
+            <h2>Priyanka Fab</h2>
             <p>{selectedMonth || 'Select Month'} {selectedYear}</p>
           </div>
 
@@ -106,7 +106,7 @@ const handlePrintSlip = () => {
         {/* --- PRINT HEADER --- */}
         <div className="print-only">
           <div className="print-header">
-            <h1>Rupai Fabric</h1>
+            <h1>Priyanka Fab</h1>
             <p>Hindwa Textile, Parab Road, Umbhel</p>
             <div className="report-title">
               SALARY STATEMENT: {selectedMonth.toUpperCase()} {selectedYear}

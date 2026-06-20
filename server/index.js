@@ -18,7 +18,7 @@ const app = express();
 // ✅ CORS Configuration
 // This allows your Netlify frontend to talk to this Railway backend
 app.use(cors({
-  origin: ["https://rupaifabric.netlify.app", "http://localhost:3000"],
+  origin: ["https://priyanka-fab.netlify.app", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -34,7 +34,7 @@ app.use("/api/yarns", yarnRoutes);
 
 // api status Check
 app.get('/', (req, res) => {
-  res.send('Rupai Fabric API is running!');
+  res.send('Priyanka Fab API is running!');
 });
 
 const PORT = process.env.PORT || 5000;

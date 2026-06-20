@@ -59,7 +59,7 @@ function App() {
   const API_BASE_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
-      : "https://rupai-fabric-n9zz.onrender.com";
+      : "https://priyanka-fab.onrender.com";
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ74WwPwwscMooeLOA5saRUOlvQGkBPahDJPmlMOzXH9BdoJVtjKUiqdiauecIRpuh/exec";
 

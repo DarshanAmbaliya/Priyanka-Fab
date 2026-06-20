@@ -19,7 +19,7 @@ const AdminReport = ({ currentUser }) => {
   const API_BASE_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
-      : "https://rupai-fabric-n9zz.onrender.com";
+      : "https://priyanka-fab.onrender.com";
 
   const API_URL = `${API_BASE_URL}/api/production/`;
 
@@ -371,7 +371,7 @@ const AdminReport = ({ currentUser }) => {
       <div className="container">
         <div className="row">
           <h2 className="title" style={{ textAlign: "center", margin: "0" }}>
-            Rupai Fabric - {monthNames[parseInt(month) - 1]} {year}
+            Priyanka Fab - {monthNames[parseInt(month) - 1]} {year}
             <br />
             <p>
               {startDate && endDate

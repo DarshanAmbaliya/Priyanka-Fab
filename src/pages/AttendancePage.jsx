@@ -13,7 +13,7 @@ import bcrypt from 'bcryptjs'
  */
 const API_BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000"
-  : "https://rupai-fabric-n9zz.onrender.com";
+  : "https://priyanka-fab.onrender.com";
 
 const API_URL = `${API_BASE_URL}/api/employees`;
 
