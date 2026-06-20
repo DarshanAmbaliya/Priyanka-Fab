@@ -15,10 +15,10 @@ connectDB();
 
 const app = express();
 
-// ✅ CORS Configuration
+// CORS Configuration
 // This allows your Netlify frontend to talk to this Railway backend
 app.use(cors({
-  origin: ["https://priyanka-fab.netlify.app", "http://localhost:3000"],
+  origin: ["https://priyankafab.netlify.app", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
